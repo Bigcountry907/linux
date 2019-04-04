@@ -251,7 +251,7 @@ int drm_helper_probe_single_connector_modes(struct drm_connector *connector,
 	} else {
 		connector->status = connector->funcs->detect(connector, true);
 	}
-		printk("DRM_PROBE_HELPER.c"[CONNECTOR:%d:%s] status updated %s\n",connector->base.id,
+		printk("[CONNECTOR:%d:%s] status updated %s\n",connector->base.id,
 		connector->name,connector->status);
 	/*
 	 * Normally either the driver's hpd code or the poll loop should
