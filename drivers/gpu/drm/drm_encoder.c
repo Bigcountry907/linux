@@ -134,7 +134,7 @@ int drm_encoder_init(struct drm_device *dev,
 		ret = -ENOMEM;
 		goto out_put;
 	}
-	printk("hxy drm_encoder_init encoder->name %s \n",encoder->name);
+	printk("DRM_ENCODER.c hxy drm_encoder_init encoder->name %s \n",encoder->name);
 	list_add_tail(&encoder->head, &dev->mode_config.encoder_list);
 	encoder->index = dev->mode_config.num_encoder++;
 

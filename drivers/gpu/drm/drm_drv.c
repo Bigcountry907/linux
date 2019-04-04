@@ -82,7 +82,7 @@ void drm_dev_printk(const struct device *dev, const char *level,
 		dev_printk(level, dev, DRM_PRINTK_FMT, function_name, prefix,
 			   &vaf);
 	else
-		printk("%s" DRM_PRINTK_FMT, level, function_name, prefix, &vaf);
+		printk("GPU/DRM_DRV.c %s" DRM_PRINTK_FMT, level, function_name, prefix, &vaf);
 
 	va_end(args);
 }
@@ -101,7 +101,7 @@ void drm_printk(const char *level, unsigned int category,
 	vaf.fmt = format;
 	vaf.va = &args;
 
-	printk("%s" "[" DRM_NAME ":%ps]%s %pV",
+	printk("GPU/DRM_DRV.c %s" "[" DRM_NAME ":%ps]%s %pV",
 	       level, __builtin_return_address(0),
 	       strcmp(level, KERN_ERR) == 0 ? " *ERROR*" : "", &vaf);
 

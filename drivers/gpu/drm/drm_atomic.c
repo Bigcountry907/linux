@@ -267,7 +267,7 @@ drm_atomic_get_crtc_state(struct drm_atomic_state *state,
 {
 	int ret, index = drm_crtc_index(crtc);
 	struct drm_crtc_state *crtc_state;
-	printk("hxy drm_atomic_get_crtc_state\n");
+	printk("DRM_ATOMIC.c hxy drm_atomic_get_crtc_state\n");
 	WARN_ON(!state->acquire_ctx);
 
 	crtc_state = drm_atomic_get_existing_crtc_state(state, crtc);
@@ -1460,7 +1460,7 @@ int drm_atomic_check_only(struct drm_atomic_state *state)
 		ret = config->funcs->atomic_check(state->dev, state);
 
 	if (ret) {
-		printk("hxy drm_atomic_check_only \n");
+		printk("DRM_ATOMIC.c hxy drm_atomic_check_only \n");
 		return ret;
 	}
 	
@@ -1501,7 +1501,7 @@ int drm_atomic_commit(struct drm_atomic_state *state)
 
 	ret = drm_atomic_check_only(state);
 	if (ret) {
-		printk("hxy drm_atomic_commit return!\n");
+		printk("DRM_ATOMIC.c hxy drm_atomic_commit return!\n");
 		return ret;
 	}
 	

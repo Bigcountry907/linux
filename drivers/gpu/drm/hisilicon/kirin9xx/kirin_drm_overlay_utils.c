@@ -1391,7 +1391,7 @@ void hisi_dss_smmu_on(struct dss_hw_ctx *ctx)
 
 void hisifb_dss_on(struct dss_hw_ctx *ctx)
 {
-	printk("hisifb_dss_on!!");
+	printk("KIRIN_DRM_OVERLAY_UTILS.chisifb_dss_on!!");
 	/* dss qos on*/
 	hisi_dss_qos_on(ctx);
 	/* mif on*/
@@ -1571,7 +1571,7 @@ void hisi_fb_pan_display(struct drm_plane *plane)
 #else
 	if(obj) {
 		display_addr = (u32)obj->paddr + src_y * stride;
-		printk("hxy display_addr is 0x%x \n",display_addr);
+		printk("KIRIN_DRM_OVERLAY_UTILS.chxy display_addr is 0x%x \n",display_addr);
 	}
 	else {
 			DRM_ERROR("hxy obj is null? \n");

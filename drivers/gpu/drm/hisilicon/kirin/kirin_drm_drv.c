@@ -90,7 +90,7 @@ static int kirin_drm_kms_init(struct drm_device *dev)
 {
 	struct kirin_drm_private *priv;
 	int ret;
-	printk("hxy kirin_drm_kms_init 1 \n");
+	printk("kirin/DRM_DRV.chxy kirin_drm_kms_init 1 \n");
 	priv = devm_kzalloc(dev->dev, sizeof(*priv), GFP_KERNEL);
 	if (!priv)
 		return -ENOMEM;
@@ -205,7 +205,7 @@ static int kirin_drm_bind(struct device *dev)
 	struct drm_driver *driver = &kirin_drm_driver;
 	struct drm_device *drm_dev;
 	int ret;
-	printk("hxy kirin_drm_bind 1!!!\n");
+	printk("kirin/DRM_DRV.chxy kirin_drm_bind 1!!!\n");
 	drm_dev = drm_dev_alloc(driver, dev);
 	if (IS_ERR(drm_dev))
 		return PTR_ERR(drm_dev);

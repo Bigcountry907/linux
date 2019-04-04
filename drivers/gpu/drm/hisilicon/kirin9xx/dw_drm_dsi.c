@@ -1021,7 +1021,7 @@ static void dsi_mipi_init(struct dw_dsi *dsi, char __iomem *mipi_dsi_base)
 #if !defined (CONFIG_HISI_FB_970)
 	int i = 0;
 #endif
-	printk("hxy dsi_mipi_init\n");
+	printk("KIRIN_DRM_DSI.chxy dsi_mipi_init\n");
 	dump_stack();
 	WARN_ON(!dsi);
 	WARN_ON(!mipi_dsi_base);
@@ -1314,7 +1314,7 @@ static void dsi_encoder_disable(struct drm_encoder *encoder)
 	struct dw_dsi *dsi = encoder_to_dsi(encoder);
 	struct dsi_hw_ctx *ctx = dsi->ctx;
 	void __iomem *base = ctx->base;
-	printk("hxy dsi_encoder_disable \n");
+	printk("KIRIN_DRM_DSI.chxy dsi_encoder_disable \n");
 	dump_stack();
 	if (!dsi->enable)
 		return;
@@ -1341,7 +1341,7 @@ static void dsi_encoder_disable(struct drm_encoder *encoder)
 static int mipi_dsi_on_sub1(struct dw_dsi *dsi, char __iomem *mipi_dsi_base)
 {
 	WARN_ON(!mipi_dsi_base);
-	printk("mipi_dsi_on_sub1 \n");
+	printk("KIRIN_DRM_DSI.cmipi_dsi_on_sub1 \n");
 	/* mipi init */
 	dsi_mipi_init(dsi, mipi_dsi_base);
 	//ADDED NEXT LINE SEE HK960
@@ -1397,7 +1397,7 @@ static void dsi_encoder_enable(struct drm_encoder *encoder)
 	struct dw_dsi *dsi = encoder_to_dsi(encoder);
 	struct dsi_hw_ctx *ctx = dsi->ctx;
 	int ret;
-	printk("hxy dsi_encoder_enable \n");
+	printk("KIRIN_DRM_DSI.chxy dsi_encoder_enable \n");
 	if (dsi->enable)
 		return;
 
@@ -1470,7 +1470,7 @@ static int dw_drm_encoder_init(struct device *dev,
 {
 	int ret;
 	u32 crtc_mask = drm_of_find_possible_crtcs(drm_dev, dev->of_node);
-	printk("dw_drm_encoder_init \n");
+	printk("KIRIN_DRM_DSI.cdw_drm_encoder_init \n");
 	if (!crtc_mask) {
 		DRM_ERROR("failed to find crtc mask\n");
 		return -EINVAL;

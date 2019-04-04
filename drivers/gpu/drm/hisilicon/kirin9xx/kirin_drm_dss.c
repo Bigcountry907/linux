@@ -918,7 +918,7 @@ static int dss_drm_init(struct drm_device *dev)
 	/* vblank irq init */
 	ret = devm_request_irq(dev->dev, ctx->irq, dss_irq_handler,
 			       IRQF_SHARED, dev->driver->name, acrtc);
-			       printk("hxy req dss irq :%s \n",dev->driver->name);
+			       printk("KIRIN_DRM_DSS.chxy req dss irq :%s \n",dev->driver->name);
 	if (ret) {
 		DRM_ERROR("fail to  devm_request_irq, ret=%d!", ret);
 		return ret;

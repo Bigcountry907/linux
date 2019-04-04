@@ -396,7 +396,7 @@ static void adv7511_dsi_config_tgen(struct adv7511 *adv7511)
 	/* set pixel clock auto mode */
 	regmap_write(adv7511->regmap_cec, 0x16,
 			0x00);
-			printk("hxy colorbar test 0x16,0x00!");
+			printk("adv7535.c hxy colorbar test 0x16,0x00!");
 #else
 	/* set pixel clock divider mode */
 	regmap_write(adv7511->regmap_cec, 0x16,
@@ -442,7 +442,7 @@ static void adv7511_dsi_receiver_dpms(struct adv7511 *adv7511)
 		regmap_write(adv7511->regmap_cec, 0x27, 0xcb);
 		regmap_write(adv7511->regmap_cec, 0x27, 0x8b);
 		regmap_write(adv7511->regmap_cec, 0x27, 0xcb);
-		printk("hxy colorbar test 0x27,0xcb!");
+		printk("adv7535.c hxy colorbar test 0x27,0xcb!");
 #else
 		/* disable internal timing generator */
 		regmap_write(adv7511->regmap_cec, 0x27, 0x0b);
@@ -454,7 +454,7 @@ static void adv7511_dsi_receiver_dpms(struct adv7511 *adv7511)
 #ifdef TEST_COLORBAR_DISPLAY
 		/*enable test mode */
 		regmap_write(adv7511->regmap_cec, 0x55, 0x80);//display colorbar
-		printk("hxy colorbar test 0x55,0x80!");
+		printk("adv7535.c hxy colorbar test 0x55,0x80!");
 #else
 		/* disable test mode */
 		regmap_write(adv7511->regmap_cec, 0x55, 0x00);
@@ -534,7 +534,7 @@ static void adv7511_dsi_receiver_dpms(struct adv7511 *adv7511)
 
 static void adv7511_power_on(struct adv7511 *adv7511)
 {
-	printk("hxy adv7511_power_on!");
+	printk("adv7535.c hxy adv7511_power_on!");
 	dump_stack();
 	adv7511->current_edid_segment = -1;
 
@@ -580,7 +580,7 @@ static void adv7511_power_off(struct adv7511 *adv7511)
 	regcache_mark_dirty(adv7511->regmap);
 
 	adv7511->powered = false;
-	printk("hxy adv7511_power_off!!" );
+	printk("adv7535.c hxy adv7511_power_off!!" );
 	adv7511_dsi_receiver_dpms(adv7511);
 }
 
@@ -775,7 +775,7 @@ static int adv7511_get_modes(struct adv7511 *adv7511,
 	adv7511->edid = edid;
 	if (!edid)
 		return 0;
-	printk("mfg_id 0x%x prod_code 0x%x width_cm %d height_cm %d  \n",edid->mfg_id,edid->prod_code,edid->width_cm,edid->height_cm);
+	printk("adv7535.c mfg_id 0x%x prod_code 0x%x width_cm %d height_cm %d  \n",edid->mfg_id,edid->prod_code,edid->width_cm,edid->height_cm);
 	drm_mode_connector_update_edid_property(connector, edid);
 	count = drm_add_edid_modes(connector, edid);
 
@@ -792,7 +792,7 @@ adv7511_detect(struct adv7511 *adv7511,
 	unsigned int val;
 	unsigned int time = 0;
 	dump_stack();
-	printk("hxy adv7511_detect!!!!!!!!!!!!!");
+	printk("adv7535.c hxy adv7511_detect!!!!!!!!!!!!!");
 #if HPD_ENABLE
 	bool hpd;
 #endif
@@ -810,7 +810,7 @@ adv7511_detect(struct adv7511 *adv7511,
 	} else {
 		DRM_INFO("disconnected : regmap_read val = 0x%x \n", val);
 		status = connector_status_disconnected;
-		printk("hxy adv7511_detect!!!!!!!!!!!!!status :%d connected is %d \n",status,connector_status_connected);
+		printk("adv7535.c hxy adv7511_detect!!!!!!!!!!!!!status :%d connected is %d \n",status,connector_status_connected);
 	}
 
 #if HPD_ENABLE
@@ -821,18 +821,18 @@ adv7511_detect(struct adv7511 *adv7511,
 	 * at least one transition from disconnected to connected and the chip
 	 * has to be reinitialized. */
 	if(hpd)
-		printk("hxy hpd is ok!");
+		printk("adv7535.c hxy hpd is ok!");
 
 	if(adv7511->powered)
-		printk("hxy adv7511 powered ok!");
+		printk("adv7535.c hxy adv7511 powered ok!");
 	else 
-		printk("hxy adv7511 powered is not ok!!!");
+		printk("adv7535.c hxy adv7511 powered is not ok!!!");
 
 	if (status != connector_status_connected) {
-		printk("status is not ok!"); 
+		printk("adv7535.c status is not ok!"); 
 	}
 	else {
-		printk("status is ok!!!");
+		printk("adv7535.c status is ok!!!");
 	}
 	
 	if (status == connector_status_connected && hpd  && adv7511->powered) {
@@ -842,7 +842,7 @@ adv7511_detect(struct adv7511 *adv7511,
 		if (adv7511->status == connector_status_connected)
 			status = connector_status_disconnected;
 	} else {
-		printk("hxy Renable HDP sensing!");
+		printk("adv7535.c hxy Renable HDP sensing!");
 		/* Renable HDP sensing */
 		regmap_update_bits(adv7511->regmap, ADV7511_REG_POWER2,
 				   ADV7511_REG_POWER2_HDP_SRC_MASK,
@@ -888,7 +888,7 @@ static int adv7511_mode_valid(struct adv7511 *adv7511,
 	/*
 	 * some work well modes which want to put in the front of the mode list.
 	 */
-	printk("Checking mode %ix%i@%i clock: %i...",
+	printk("adv7535.c Checking mode %ix%i@%i clock: %i...",
 		  mode->hdisplay, mode->vdisplay, drm_mode_vrefresh(mode), mode->clock);
 	if ((mode->hdisplay == 1920 && mode->vdisplay == 1080 && mode->clock == 148500) ||
 	    (mode->hdisplay == 1280 && mode->vdisplay == 800 && mode->clock == 83496) ||
@@ -898,10 +898,10 @@ static int adv7511_mode_valid(struct adv7511 *adv7511,
 	    (mode->hdisplay == 1024 && mode->vdisplay == 768 && mode->clock == 81833) ||
 	    (mode->hdisplay == 800 && mode->vdisplay == 600 && mode->clock == 40000)) {
 		mode->type |= DRM_MODE_TYPE_PREFERRED;
-		printk("OK\n");
+		printk("adv7535.c OK\n");
 		return MODE_OK;
 	}
-	printk("BAD\n");
+	printk("adv7535.c BAD\n");
 	return MODE_BAD;
 }
 
@@ -912,7 +912,7 @@ static void adv7511_mode_set(struct adv7511 *adv7511,
 	unsigned int low_refresh_rate;
 	unsigned int hsync_polarity = 0;
 	unsigned int vsync_polarity = 0;
-	printk("hxy adv7511_mode_set!\n");
+	printk("adv7535.c hxy adv7511_mode_set!\n");
 	if (adv7511->embedded_sync) {
 		unsigned int hsync_offset, hsync_len;
 		unsigned int vsync_offset, vsync_len;
@@ -1029,7 +1029,7 @@ static int adv7511_encoder_get_modes(struct drm_encoder *encoder,
 			     struct drm_connector *connector)
 {
 	struct adv7511 *adv7511 = encoder_to_adv7511(encoder);
-	printk("hxy adv7511_encoder_get_modes!\n");
+	printk("adv7535.c hxy adv7511_encoder_get_modes!\n");
 	return adv7511_get_modes(adv7511, connector);
 }
 
@@ -1048,7 +1048,7 @@ adv7511_encoder_detect(struct drm_encoder *encoder,
 		       struct drm_connector *connector)
 {
 	struct adv7511 *adv7511 = encoder_to_adv7511(encoder);
-	printk("hxy adv7511_encoder_detect!\n");
+	printk("adv7535.c hxy adv7511_encoder_detect!\n");
 	return adv7511_detect(adv7511, connector);
 }
 
@@ -1101,7 +1101,7 @@ static struct adv7511 *connector_to_adv7511(struct drm_connector *connector)
 static int adv7533_connector_get_modes(struct drm_connector *connector)
 {
 	struct adv7511 *adv = connector_to_adv7511(connector);
-	printk("hxy adv7533_connector_get_modes!\n");
+	printk("adv7535.c hxy adv7533_connector_get_modes!\n");
 	return adv7511_get_modes(adv, connector);
 }
 
@@ -1109,7 +1109,7 @@ static struct drm_encoder *
 adv7533_connector_best_encoder(struct drm_connector *connector)
 {
 	struct adv7511 *adv = connector_to_adv7511(connector);
-	printk(" hxy adv7533_connector_best_encoder encoder->name %s  name 2 :%s\n",adv->encoder->name,adv->bridge.encoder->name);
+	printk("adv7535.c  hxy adv7533_connector_best_encoder encoder->name %s  name 2 :%s\n",adv->encoder->name,adv->bridge.encoder->name);
 	return adv->bridge.encoder;
 }
 
@@ -1118,7 +1118,7 @@ adv7533_connector_mode_valid(struct drm_connector *connector,
 				struct drm_display_mode *mode)
 {
 	struct adv7511 *adv = connector_to_adv7511(connector);
-	printk("hxy adv7533_connector_mode_valid!\n");
+	printk("adv7535.c hxy adv7533_connector_mode_valid!\n");
 	return adv7511_mode_valid(adv, mode);
 }
 
@@ -1132,7 +1132,7 @@ static enum drm_connector_status
 adv7533_connector_detect(struct drm_connector *connector, bool force)
 {
 	struct adv7511 *adv = connector_to_adv7511(connector);
-    printk("hxy adv7533_connector_detect!\n");
+    printk("adv7535.c hxy adv7533_connector_detect!\n");
 	adv_g = adv;
 	return adv7511_detect(adv, connector);
 }
@@ -1156,14 +1156,14 @@ static struct adv7511 *bridge_to_adv7511(struct drm_bridge *bridge)
 static void adv7533_bridge_pre_enable(struct drm_bridge *bridge)
 {
 	struct adv7511 *adv = bridge_to_adv7511(bridge);
-	printk("hxy adv7533_bridge_post_disable!!\n" );
+	printk("adv7535.c hxy adv7533_bridge_post_disable!!\n" );
 	adv7511_power_on(adv);
 }
 
 static void adv7533_bridge_post_disable(struct drm_bridge *bridge)
 {
 	struct adv7511 *adv = bridge_to_adv7511(bridge);
-	printk("hxy adv7533_bridge_post_disable!!\n" );
+	printk("adv7535.c hxy adv7533_bridge_post_disable!!\n" );
 #if HPD_ENABLE
 	if (!adv->powered)
 		return;
@@ -1185,7 +1185,7 @@ static void adv7533_bridge_mode_set(struct drm_bridge *bridge,
 				     struct drm_display_mode *adj_mode)
 {
 	struct adv7511 *adv = bridge_to_adv7511(bridge);
-	printk("hxy adv7533_bridge_mode_set \n");
+	printk("adv7535.c hxy adv7533_bridge_mode_set \n");
 	adv7511_mode_set(adv, mode, adj_mode);
 }
 
@@ -1240,7 +1240,7 @@ static int adv7533_bridge_attach(struct drm_bridge *bridge)
 	int ret;
 
 	adv->encoder = bridge->encoder;
-	printk(" hxy adv7533_bridge_attach encoder->name %s\n",adv->encoder->name);
+	printk("adv7535.c  hxy adv7533_bridge_attach encoder->name %s\n",adv->encoder->name);
 	if (!bridge->encoder) {
 		DRM_ERROR("Parent encoder object not found");
 		return -ENODEV;
@@ -1622,7 +1622,7 @@ static int adv7511_probe(struct i2c_client *i2c, const struct i2c_device_id *id)
 			dev_err(dev, "failed to add adv7533 bridge\n");
 			goto err_i2c_unregister_cec;
 		} else {
-			printk("hxy  drm_bridge_add !\n");
+			printk("adv7535.c hxy  drm_bridge_add !\n");
 		}
 	}
 #ifdef CONFIG_HDMI_ADV7511_AUDIO
@@ -1672,7 +1672,7 @@ static int adv7511_encoder_init(struct i2c_client *i2c, struct drm_device *dev,
 	encoder->slave_funcs = &adv7511_encoder_funcs;
 
 	adv7511->encoder = &encoder->base;
-	printk("hxy adv7511_encoder_init name %s \n",adv7511->encoder->name);
+	printk("adv7535.c hxy adv7511_encoder_init name %s \n",adv7511->encoder->name);
 	return 0;
 }
 

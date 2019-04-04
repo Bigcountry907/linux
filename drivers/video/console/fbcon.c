@@ -3271,10 +3271,10 @@ static int fbcon_event_notify(struct notifier_block *self,
 		if(waiting_for_hdmi_connect)
 	{
 			//msleep(1000);
-			printk("BC-907 DRM_ATOMIC_HELPER.c fbcon_event_notify waiting_for_hdmi_connect,return!cation 0x%x \n",action);
+			printk("FBCON.cBC-907 DRM_ATOMIC_HELPER.c fbcon_event_notify waiting_for_hdmi_connect,return!cation 0x%x \n",action);
 			//	return 0;
 		} else {
-			printk("BC-907 DRM_ATOMIC_HELPER.c fbcon_event_notify ,!cation 0x%x \n",action);
+			printk("FBCON.cBC-907 DRM_ATOMIC_HELPER.c fbcon_event_notify ,!cation 0x%x \n",action);
 		}			
 	
 	

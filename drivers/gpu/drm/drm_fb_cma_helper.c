@@ -350,7 +350,7 @@ static int drm_fb_cma_mmap(struct fb_info *info, struct vm_area_struct *vma)
 	//return dma_mmap_writecombine(info->device, vma, info->screen_base,
 				    // info->fix.smem_start, info->fix.smem_len);
 	int ret = fake_kirin_fbdev_mmap(info,vma);
-	printk("hxy drm_fb_cma_mmap %d \n",ret);
+	printk("DRM_FB_CMA_HELPER.c hxy drm_fb_cma_mmap %d \n",ret);
 	return ret;				    
 }
 
@@ -381,7 +381,7 @@ static int drm_fbdev_cma_defio_init(struct fb_info *fbi,
 {
 	struct fb_deferred_io *fbdefio;
 	struct fb_ops *fbops;
-		printk("hxy drm_fbdev_cma_defio_init  !\n");
+		printk("DRM_FB_CMA_HELPER.c hxy drm_fbdev_cma_defio_init  !\n");
 	/*
 	 * Per device structures are needed because:
 	 * fbops: fb_deferred_io_cleanup() clears fbops.fb_mmap
@@ -442,7 +442,7 @@ unsigned long fake_kirin_alloc_fb_buffer(int size)
 	size_t buf_len = 0;
 	unsigned long buf_addr = 0;
 	int shared_fd = -1;
-	printk("hxy kirin_alloc_fb_buffer in cma mode!!!");
+	printk("DRM_FB_CMA_HELPER.c hxy kirin_alloc_fb_buffer in cma mode!!!");
 	buf_len = size;
 	client_G = hisi_ion_client_create(HISI_FB_ION_CLIENT_NAME);
 	if (!client_G) {
@@ -590,7 +590,7 @@ int drm_fbdev_cma_create_with_funcs(struct drm_fb_helper *helper,
 	int ret;
 
 //	DRM_DEBUG_KMS("surface width(%d), height(%d) and bpp(%d)\n",
-printk("surface width(%d), height(%d) and bpp(%d)\n",
+printk("DRM_FB_CMA_HELPER.c surface width(%d), height(%d) and bpp(%d)\n",
 			sizes->surface_width, sizes->surface_height,
 			sizes->surface_bpp);
 
@@ -649,7 +649,7 @@ printk("surface width(%d), height(%d) and bpp(%d)\n",
 		if (ret)
 			goto err_cma_destroy;
 	}
-printk("hxy drm_fbdev_cma_create_with_funcs is ok!!!smem_start 0x%x  smem_len 0x%x  screen_base 0x%x \n",fbi->fix.smem_start,fbi->fix.smem_len,fbi->screen_base);
+printk("DRM_FB_CMA_HELPER.c hxy drm_fbdev_cma_create_with_funcs is ok!!!smem_start 0x%x  smem_len 0x%x  screen_base 0x%x \n",fbi->fix.smem_start,fbi->fix.smem_len,fbi->screen_base);
 	return 0;
 
 err_cma_destroy:
@@ -666,7 +666,7 @@ EXPORT_SYMBOL(drm_fbdev_cma_create_with_funcs);
 static int drm_fbdev_cma_create(struct drm_fb_helper *helper,
 	struct drm_fb_helper_surface_size *sizes)
 {
-	printk("hxy drm_fbdev_cma_create!!! FBDEV-CMA GOOD");
+	printk("DRM_FB_CMA_HELPER.c hxy drm_fbdev_cma_create!!! FBDEV-CMA GOOD");
 	return drm_fbdev_cma_create_with_funcs(helper, sizes, &drm_fb_cma_funcs);
 }
 

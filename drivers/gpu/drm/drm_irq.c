@@ -1143,7 +1143,7 @@ static int drm_vblank_get(struct drm_device *dev, unsigned int pipe)
 	struct drm_vblank_crtc *vblank = &dev->vblank[pipe];
 	unsigned long irqflags;
 	int ret = 0;
-	printk("hxy num_crtcs %d \n",dev->num_crtcs);
+	printk("DRM_IRQ.c hxy num_crtcs %d \n",dev->num_crtcs);
 	if (!dev->num_crtcs)
 		return -EINVAL;
 

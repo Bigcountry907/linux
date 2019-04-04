@@ -102,7 +102,7 @@ struct drm_gem_cma_object *drm_gem_cma_create(struct drm_device *drm,
 {
 	struct drm_gem_cma_object *cma_obj;
 	int ret;
-	printk("hxy drm_gem_cma_create!");
+	printk("DRM_GEM_CMA_HELPER.c DRM_GEM_CMA_HELPER.c hxy drm_gem_cma_create!");
 	size = round_up(size, PAGE_SIZE);
 
 	cma_obj = __drm_gem_cma_create(drm, size);
