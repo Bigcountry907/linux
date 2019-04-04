@@ -102,14 +102,13 @@ struct drm_gem_cma_object *drm_gem_cma_create(struct drm_device *drm,
 {
 	struct drm_gem_cma_object *cma_obj;
 	int ret;
-
+	printk("hxy drm_gem_cma_create!");
 	size = round_up(size, PAGE_SIZE);
 
 	cma_obj = __drm_gem_cma_create(drm, size);
 	if (IS_ERR(cma_obj))
 		return cma_obj;
-
-	cma_obj->vaddr = dma_alloc_wc(drm->dev, size, &cma_obj->paddr,
+		cma_obj->vaddr = dma_alloc_wc(drm->dev, size, &cma_obj->paddr,
 				      GFP_KERNEL | __GFP_NOWARN);
 	if (!cma_obj->vaddr) {
 		dev_err(drm->dev, "failed to allocate buffer with size %zu\n",

@@ -324,7 +324,7 @@ void drm_connector_cleanup(struct drm_connector *connector)
 {
 	struct drm_device *dev = connector->dev;
 	struct drm_display_mode *mode, *t;
-
+	printk("hxy drm_connector_cleanup!\n");
 	/* The connector should have been removed from userspace long before
 	 * it is finally destroyed.
 	 */

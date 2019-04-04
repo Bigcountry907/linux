@@ -30,19 +30,13 @@
 #include <drm/drm_panel.h>
 
 #include "dw_dsi_reg.h"
-#if defined (CONFIG_HISI_FB_970)
 #include "kirin970_dpe_reg.h"
-#else
-#include "kirin_dpe_reg.h"
-#endif
+//#include "kirin_dpe_reg.h" <<<-- USED BY HIKEY960
 #include "kirin_drm_dpe_utils.h"
-#include "kirin_drm_drv.h"
 
-#if defined (CONFIG_HISI_FB_970)
+#include "kirin_drm_drv.h"
+#include <asm/ptrace.h>
 #define DTS_COMP_DSI_NAME "hisilicon,kirin970-dsi"
-#else
-#define DTS_COMP_DSI_NAME "hisilicon,hi3660-dsi"
-#endif
 
 #define ROUND(x, y)		((x) / (y) + \
 				((x) % (y) * 10 / (y) >= 5 ? 1 : 0))
@@ -267,7 +261,7 @@ static const struct dsi_phy_range dphy_range_info[] = {
 	{  750000,  1000000,   1,    0 },
 	{ 1000000,  1500000,   0,    0 }
 };
-
+int waiting_for_hdmi_connect=1;
 void dsi_set_output_client(struct drm_device *dev)
 {
 	enum dsi_output_client client;
@@ -306,6 +300,7 @@ void dsi_set_output_client(struct drm_device *dev)
 		drm_sysfs_hotplug_event(dev);
 		DRM_INFO("client change to %s\n", client == OUT_HDMI ?
 				 "HDMI" : "panel");
+				waiting_for_hdmi_connect = 0;
 	}
 
 	mutex_unlock(&dev->mode_config.mutex);
@@ -1022,11 +1017,12 @@ static void dsi_mipi_init(struct dw_dsi *dsi, char __iomem *mipi_dsi_base)
 	struct mipi_panel_info *mipi = NULL;
 	dss_rect_t rect;
 	u32 cmp_stopstate_val = 0;
-	u32 lanes;
+	u32 lanes;	
 #if !defined (CONFIG_HISI_FB_970)
 	int i = 0;
 #endif
-
+	printk("hxy dsi_mipi_init\n");
+	dump_stack();
 	WARN_ON(!dsi);
 	WARN_ON(!mipi_dsi_base);
 
@@ -1318,7 +1314,8 @@ static void dsi_encoder_disable(struct drm_encoder *encoder)
 	struct dw_dsi *dsi = encoder_to_dsi(encoder);
 	struct dsi_hw_ctx *ctx = dsi->ctx;
 	void __iomem *base = ctx->base;
-
+	printk("hxy dsi_encoder_disable \n");
+	dump_stack();
 	if (!dsi->enable)
 		return;
 
@@ -1344,10 +1341,11 @@ static void dsi_encoder_disable(struct drm_encoder *encoder)
 static int mipi_dsi_on_sub1(struct dw_dsi *dsi, char __iomem *mipi_dsi_base)
 {
 	WARN_ON(!mipi_dsi_base);
-
+	printk("mipi_dsi_on_sub1 \n");
 	/* mipi init */
 	dsi_mipi_init(dsi, mipi_dsi_base);
-
+	//ADDED NEXT LINE SEE HK960
+	DRM_INFO("dsi_mipi_init ok\n");
 	/* dsi memory init */
 #if defined (CONFIG_HISI_FB_970)
 	outp32(mipi_dsi_base + DSI_MEM_CTRL, 0x02600008);
@@ -1399,7 +1397,7 @@ static void dsi_encoder_enable(struct drm_encoder *encoder)
 	struct dw_dsi *dsi = encoder_to_dsi(encoder);
 	struct dsi_hw_ctx *ctx = dsi->ctx;
 	int ret;
-
+	printk("hxy dsi_encoder_enable \n");
 	if (dsi->enable)
 		return;
 
@@ -1472,7 +1470,7 @@ static int dw_drm_encoder_init(struct device *dev,
 {
 	int ret;
 	u32 crtc_mask = drm_of_find_possible_crtcs(drm_dev, dev->of_node);
-
+	printk("dw_drm_encoder_init \n");
 	if (!crtc_mask) {
 		DRM_ERROR("failed to find crtc mask\n");
 		return -EINVAL;

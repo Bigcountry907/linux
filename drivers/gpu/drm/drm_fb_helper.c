@@ -128,6 +128,7 @@ int drm_fb_helper_single_add_all_connectors(struct drm_fb_helper *fb_helper)
 			goto fail;
 	}
 	mutex_unlock(&dev->mode_config.mutex);
+	printk("hxy drm_fb_helper_single_add_all_connectors out!\n");
 	return 0;
 fail:
 	for (i = 0; i < fb_helper->connector_count; i++) {
@@ -172,6 +173,7 @@ int drm_fb_helper_add_one_connector(struct drm_fb_helper *fb_helper, struct drm_
 	drm_connector_reference(connector);
 	fb_helper_connector->connector = connector;
 	fb_helper->connector_info[fb_helper->connector_count++] = fb_helper_connector;
+	printk("hxy drm_fb_helper_add_one_connector connector->name %s \n",connector->name);
 	return 0;
 }
 EXPORT_SYMBOL(drm_fb_helper_add_one_connector);
@@ -325,7 +327,7 @@ static int restore_fbdev_mode_atomic(struct drm_fb_helper *fb_helper)
 	struct drm_atomic_state *state;
 	int i, ret;
 	unsigned plane_mask;
-
+	printk("hxy restore_fbdev_mode_atomic \n");
 	state = drm_atomic_state_alloc(dev);
 	if (!state)
 		return -ENOMEM;
@@ -389,9 +391,9 @@ static int restore_fbdev_mode(struct drm_fb_helper *fb_helper)
 	struct drm_device *dev = fb_helper->dev;
 	struct drm_plane *plane;
 	int i;
-
+	printk("hxy drm_fb_helper_restore_fbdev_mode_unlocked \n");
 	drm_warn_on_modeset_not_all_locked(dev);
-
+	printk("hxy restore_fbdev_mode \n");
 	if (dev->mode_config.funcs->atomic_commit)
 		return restore_fbdev_mode_atomic(fb_helper);
 
@@ -579,8 +581,13 @@ static void drm_fb_helper_dpms(struct fb_info *info, int dpms_mode)
  */
 int drm_fb_helper_blank(int blank, struct fb_info *info)
 {
-	if (oops_in_progress)
-		return -EBUSY;
+
+	printk("hxy drm_fb_helper_blank !\n");		
+
+	if (oops_in_progress) {
+	printk("hxy drm_fb_helper_blank error!\n");		
+ 		return -EBUSY;
+	}
 
 	switch (blank) {
 	/* Display: On; HSync: On, VSync: On */
@@ -981,6 +988,8 @@ void drm_fb_helper_sys_fillrect(struct fb_info *info,
 	sys_fillrect(info, rect);
 	drm_fb_helper_dirty(info, rect->dx, rect->dy,
 			    rect->width, rect->height);
+		printk("hxy drm_fb_helper_sys_fillrect \n");
+
 }
 EXPORT_SYMBOL(drm_fb_helper_sys_fillrect);
 
@@ -997,6 +1006,7 @@ void drm_fb_helper_sys_copyarea(struct fb_info *info,
 	sys_copyarea(info, area);
 	drm_fb_helper_dirty(info, area->dx, area->dy,
 			    area->width, area->height);
+	printk("hxy drm_fb_helper_sys_copyarea \n");
 }
 EXPORT_SYMBOL(drm_fb_helper_sys_copyarea);
 
@@ -1013,6 +1023,7 @@ void drm_fb_helper_sys_imageblit(struct fb_info *info,
 	sys_imageblit(info, image);
 	drm_fb_helper_dirty(info, image->dx, image->dy,
 			    image->width, image->height);
+printk("hxy drm_fb_helper_sys_imageblit \n");
 }
 EXPORT_SYMBOL(drm_fb_helper_sys_imageblit);
 
@@ -1183,13 +1194,16 @@ int drm_fb_helper_setcmap(struct fb_cmap *cmap, struct fb_info *info)
 	struct drm_crtc *crtc;
 	int i, j, rc = 0;
 	int start;
-
-	if (oops_in_progress)
-		return -EBUSY;
+		printk("hxy drm_fb_helper_setcmap in !\n");
+	if (oops_in_progress) {
+		printk("hxy drm_fb_helper_setcmap in erro 1 !\n");
+	return -EBUSY;
+	};
 
 	drm_modeset_lock_all(dev);
 	if (!drm_fb_helper_is_bound(fb_helper)) {
 		drm_modeset_unlock_all(dev);
+		printk("hxy drm_fb_helper_setcmap in erro 2 !\n");
 		return -EBUSY;
 	}
 
@@ -1216,11 +1230,18 @@ int drm_fb_helper_setcmap(struct fb_cmap *cmap, struct fb_info *info)
 			rc = setcolreg(crtc, hred, hgreen, hblue, start++, info);
 			if (rc)
 				goto out;
+			rc = setcolreg(crtc, hred, hgreen, hblue, start++, info);			
+			if (rc) {
+				printk("hxy drm_fb_helper_setcmap in erro 3 !%d \n",rc);				
+				//goto out;
+				rc =0;
+			}								
 		}
 		if (crtc_funcs->load_lut)
 			crtc_funcs->load_lut(crtc);
 	}
  out:
+ 	printk("hxy drm_fb_helper_setcmap out %d !\n",rc);
 	drm_modeset_unlock_all(dev);
 	return rc;
 }
@@ -1245,7 +1266,7 @@ int drm_fb_helper_check_var(struct fb_var_screeninfo *var,
 	if (var->bits_per_pixel > fb->bits_per_pixel ||
 	    var->xres > fb->width || var->yres > fb->height ||
 	    var->xres_virtual > fb->width || var->yres_virtual > fb->height) {
-		DRM_DEBUG("fb userspace requested width/height/bpp is greater than current fb "
+		DRM_DEBUG("hxy fb userspace requested width/height/bpp is greater than current fb "
 			  "request %dx%d-%d (virtual %dx%d) > %dx%d-%d\n",
 			  var->xres, var->yres, var->bits_per_pixel,
 			  var->xres_virtual, var->yres_virtual,
@@ -1317,6 +1338,7 @@ int drm_fb_helper_check_var(struct fb_var_screeninfo *var,
 		var->transp.offset = 24;
 		break;
 	default:
+		printk("hxy drm_fb_helper_check_var error!\n");
 		return -EINVAL;
 	}
 	return 0;
@@ -1335,12 +1357,14 @@ int drm_fb_helper_set_par(struct fb_info *info)
 {
 	struct drm_fb_helper *fb_helper = info->par;
 	struct fb_var_screeninfo *var = &info->var;
-
-	if (oops_in_progress)
-		return -EBUSY;
+	printk("hxy drm_fb_helper_set_par \n");
+	if (oops_in_progress) {
+		printk("hxy drm_fb_helper_set_par error!\n");	
+ 		return -EBUSY;
+	}
 
 	if (var->pixclock != 0) {
-		DRM_ERROR("PIXEL CLOCK SET\n");
+		DRM_ERROR("hxy PIXEL CLOCK SET\n");
 		return -EINVAL;
 	}
 
@@ -1423,12 +1447,13 @@ int drm_fb_helper_pan_display(struct fb_var_screeninfo *var,
 	struct drm_mode_set *modeset;
 	int ret = 0;
 	int i;
-
+		printk("hxy drm_fb_helper_pan_display in !\n");	
 	if (oops_in_progress)
 		return -EBUSY;
 
 	drm_modeset_lock_all(dev);
 	if (!drm_fb_helper_is_bound(fb_helper)) {
+		printk("hxy drm_fb_helper_pan_display error !\n");
 		drm_modeset_unlock_all(dev);
 		return -EBUSY;
 	}
@@ -1454,6 +1479,7 @@ int drm_fb_helper_pan_display(struct fb_var_screeninfo *var,
 	}
 unlock:
 	drm_modeset_unlock_all(dev);
+	printk("hxy drm_fb_helper_pan_display out %d !\n",ret);
 	return ret;
 }
 EXPORT_SYMBOL(drm_fb_helper_pan_display);
@@ -1472,7 +1498,7 @@ static int drm_fb_helper_single_fb_probe(struct drm_fb_helper *fb_helper,
 	struct fb_info *info;
 	struct drm_fb_helper_surface_size sizes;
 	int gamma_size = 0;
-
+	printk("hxy drm_fb_helper_single_fb_probe!");
 	memset(&sizes, 0, sizeof(struct drm_fb_helper_surface_size));
 	sizes.surface_depth = 24;
 	sizes.surface_bpp = 32;
@@ -2122,7 +2148,7 @@ static void drm_setup_crtcs(struct drm_fb_helper *fb_helper)
 	int width, height;
 	int i;
 
-	DRM_DEBUG_KMS("\n");
+	DRM_DEBUG_KMS("ssss \n");
 
 	width = dev->mode_config.max_width;
 	height = dev->mode_config.max_height;
@@ -2250,7 +2276,7 @@ int drm_fb_helper_initial_config(struct drm_fb_helper *fb_helper, int bpp_sel)
 
 	if (!drm_fbdev_emulation)
 		return 0;
-
+	printk("hxy drm_fb_helper_single_add_all_connectors!\n");
 	mutex_lock(&dev->mode_config.mutex);
 	count = drm_fb_helper_probe_connector_modes(fb_helper,
 						    dev->mode_config.max_width,

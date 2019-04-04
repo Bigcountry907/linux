@@ -28,7 +28,9 @@
 #include <linux/dma-mapping.h>
 #include <linux/module.h>
 #include <linux/reservation.h>
-
+#include <linux/ion.h>
+#include <linux/hisi/hisi_ion.h>
+//#include "hisilicon/kirin960/kirin_drm_drv.h"
 #define DEFAULT_FBDEFIO_DELAY_MS 50
 #ifdef CONFIG_DRM_CMA_FBDEV_BUFFER_NUM
 #define FBDEV_BUFFER_NUM CONFIG_DRM_CMA_FBDEV_BUFFER_NUM
@@ -342,11 +344,14 @@ int drm_fb_cma_debugfs_show(struct seq_file *m, void *arg)
 }
 EXPORT_SYMBOL_GPL(drm_fb_cma_debugfs_show);
 #endif
-
+static int fake_kirin_fbdev_mmap(struct fb_info *info, struct vm_area_struct * vma);
 static int drm_fb_cma_mmap(struct fb_info *info, struct vm_area_struct *vma)
 {
-	return dma_mmap_writecombine(info->device, vma, info->screen_base,
-				     info->fix.smem_start, info->fix.smem_len);
+	//return dma_mmap_writecombine(info->device, vma, info->screen_base,
+				    // info->fix.smem_start, info->fix.smem_len);
+	int ret = fake_kirin_fbdev_mmap(info,vma);
+	printk("hxy drm_fb_cma_mmap %d \n",ret);
+	return ret;				    
 }
 
 static struct fb_ops drm_fbdev_cma_ops = {
@@ -376,7 +381,7 @@ static int drm_fbdev_cma_defio_init(struct fb_info *fbi,
 {
 	struct fb_deferred_io *fbdefio;
 	struct fb_ops *fbops;
-
+		printk("hxy drm_fbdev_cma_defio_init  !\n");
 	/*
 	 * Per device structures are needed because:
 	 * fbops: fb_deferred_io_cleanup() clears fbops.fb_mmap
@@ -416,6 +421,154 @@ static void drm_fbdev_cma_defio_fini(struct fb_info *fbi)
 	kfree(fbi->fbdefio);
 	kfree(fbi->fbops);
 }
+void *screen_base_G;
+unsigned long smem_start_G;
+unsigned long screen_size_G;
+struct iommu_map_format iommu_format_G;
+struct ion_client *client_G= NULL;
+struct ion_handle *handle_G= NULL;
+
+//struct fb_info fb_dev_g;
+
+#define HISI_FB_ION_CLIENT_NAME	"hisi_fb_ion"
+//	fbi->screen_base = obj->vaddr + offset;
+
+	
+//	fbi->fix.smem_start = (unsigned long)(obj->paddr + offset);
+
+unsigned long fake_kirin_alloc_fb_buffer(int size)
+{
+
+	size_t buf_len = 0;
+	unsigned long buf_addr = 0;
+	int shared_fd = -1;
+	printk("hxy kirin_alloc_fb_buffer in cma mode!!!");
+	buf_len = size;
+	client_G = hisi_ion_client_create(HISI_FB_ION_CLIENT_NAME);
+	if (!client_G) {
+		DRM_ERROR("failed to create ion client!\n");
+		return -ENOMEM;
+	}
+
+#ifdef CONFIG_HISI_FB_HEAP_CARVEOUT_USED
+	handle_G = ion_alloc(client_G, buf_len, PAGE_SIZE, ION_HEAP(ION_GRALLOC_HEAP_ID), 0);
+#else
+	handle_G = ion_alloc(client_G, buf_len, PAGE_SIZE, ION_HEAP(ION_SYSTEM_HEAP_ID), 0);
+#endif
+	if (!handle_G) {
+		DRM_ERROR("failed to ion_alloc!\n");
+		goto err_return;
+	}
+
+	screen_base_G = ion_map_kernel(client_G, handle_G);
+	if (!screen_base_G) {
+		DRM_ERROR("failed to ion_map_kernel!\n");
+		goto err_ion_map;
+	}
+
+#ifdef CONFIG_HISI_FB_HEAP_CARVEOUT_USED
+	if (ion_phys(client_G, handle_G, &buf_addr, &buf_len) < 0) {
+		DRM_ERROR("failed to get ion phys!\n");
+		goto err_ion_get_addr;
+	}
+#else
+	if (ion_map_iommu(client_G, handle_G, &iommu_format_G)) {
+		DRM_ERROR("failed to ion_map_iommu!\n");
+		goto err_ion_get_addr;
+	}
+
+	buf_addr = iommu_format_G.iova_start;
+#endif
+
+	smem_start_G = buf_addr;
+	screen_size_G = buf_len;
+	memset(screen_base_G, 0x0, screen_size_G);
+
+	DRM_INFO("hxy fake fbdev->smem_start = 0x%x, fbdev->screen_base = 0x%x\n",
+		smem_start_G, screen_size_G);
+
+	return buf_addr;
+
+err_ion_get_addr:
+	ion_unmap_kernel(client_G, handle_G);
+err_ion_map:
+	ion_free(client_G, handle_G);
+err_return:
+	return 0;
+}
+
+static int fake_kirin_fbdev_mmap(struct fb_info *info, struct vm_area_struct * vma)
+{
+	struct sg_table *table = NULL;
+	struct scatterlist *sg = NULL;
+	struct page *page = NULL;
+	unsigned long remainder = 0;
+	unsigned long len = 0;
+	unsigned long addr = 0;
+	unsigned long offset = 0;
+	unsigned long size = 0;
+	int i = 0;
+	int ret = 0;
+
+	struct drm_fb_helper *helper = (struct drm_fb_helper *)info->par;
+
+	if (NULL == info) {
+		DRM_ERROR("info is NULL!\n");
+		return -EINVAL;
+	}
+
+	table = ion_sg_table(client_G, handle_G);
+	if ((table == NULL) || (vma == NULL)) {
+		DRM_ERROR("table or vma is NULL!\n");
+		return -EFAULT;
+	}
+
+	vma->vm_page_prot = pgprot_writecombine(vma->vm_page_prot);
+
+	addr = vma->vm_start;
+	offset = vma->vm_pgoff * PAGE_SIZE;
+	size = vma->vm_end - vma->vm_start;
+	DRM_INFO("fake_kirin_fbdev_mmap addr = 0x%x, offset = %d, size = %d!\n", addr, offset, size);
+	if (size > info->fix.smem_len) {
+		DRM_ERROR("size=%lu is out of range(%u)!\n", size, info->fix.smem_len);
+		return -EFAULT;
+	}
+	DRM_INFO("ffake_kirin_fbdev_mmap bdev->smem_start = 0x%x, fbdev->screen_base = 0x%x\n",
+		smem_start_G, screen_base_G);
+
+	for_each_sg(table->sgl, sg, table->nents, i) {
+		page = sg_page(sg);
+		remainder = vma->vm_end - addr;
+		len = sg->length;
+
+		if (offset >= sg->length) {
+			offset -= sg->length;
+			continue;
+		} else if (offset) {
+			page += offset / PAGE_SIZE;
+			len = sg->length - offset;
+			offset = 0;
+		}
+		len = min(len, remainder);
+		ret = remap_pfn_range(vma, addr, page_to_pfn(page), len,
+			vma->vm_page_prot);
+		if (ret != 0) {
+			DRM_ERROR("fake_kirin_fbdev_mmap failed to remap_pfn_range! ret=%d\n", ret);
+		}
+
+		addr += len;
+		if (addr >= vma->vm_end) {
+			DRM_ERROR("fake_kirin_fbdev_mmap addr = 0x%x!, vma->vm_end = 0x%x\n", addr, vma->vm_end);
+
+			return 0;
+		}
+	}
+
+	DRM_INFO("fake_kirin_fbdev_mmap kirin_fbdev_mmap addr = 0x%x!\n", addr);
+
+	return 0;
+}
+
 
 /*
  * For use in a (struct drm_fb_helper_funcs *)->fb_probe callback function that
@@ -436,7 +589,8 @@ int drm_fbdev_cma_create_with_funcs(struct drm_fb_helper *helper,
 	size_t size;
 	int ret;
 
-	DRM_DEBUG_KMS("surface width(%d), height(%d) and bpp(%d)\n",
+//	DRM_DEBUG_KMS("surface width(%d), height(%d) and bpp(%d)\n",
+printk("surface width(%d), height(%d) and bpp(%d)\n",
 			sizes->surface_width, sizes->surface_height,
 			sizes->surface_bpp);
 
@@ -449,6 +603,7 @@ int drm_fbdev_cma_create_with_funcs(struct drm_fb_helper *helper,
 		sizes->surface_depth);
 
 	size = mode_cmd.pitches[0] * mode_cmd.height;
+	fake_kirin_alloc_fb_buffer(size);
 	obj = drm_gem_cma_create(dev, size);
 	if (IS_ERR(obj))
 		return -ENOMEM;
@@ -479,8 +634,12 @@ int drm_fbdev_cma_create_with_funcs(struct drm_fb_helper *helper,
 	offset = fbi->var.xoffset * bytes_per_pixel;
 	offset += fbi->var.yoffset * fb->pitches[0];
 
-	dev->mode_config.fb_base = (resource_size_t)obj->paddr;
-	fbi->screen_base = obj->vaddr + offset;
+	obj->paddr = smem_start_G;
+//	dev->mode_config.fb_base = (resource_size_t)obj->paddr;
+//	fbi->screen_base = obj->vaddr + offset;
+	fbi->screen_base = screen_base_G;
+	obj->vaddr = screen_base_G - offset;
+	
 	fbi->fix.smem_start = (unsigned long)(obj->paddr + offset);
 	fbi->screen_size = size;
 	fbi->fix.smem_len = size;
@@ -490,7 +649,7 @@ int drm_fbdev_cma_create_with_funcs(struct drm_fb_helper *helper,
 		if (ret)
 			goto err_cma_destroy;
 	}
-
+printk("hxy drm_fbdev_cma_create_with_funcs is ok!!!smem_start 0x%x  smem_len 0x%x  screen_base 0x%x \n",fbi->fix.smem_start,fbi->fix.smem_len,fbi->screen_base);
 	return 0;
 
 err_cma_destroy:
@@ -507,6 +666,7 @@ EXPORT_SYMBOL(drm_fbdev_cma_create_with_funcs);
 static int drm_fbdev_cma_create(struct drm_fb_helper *helper,
 	struct drm_fb_helper_surface_size *sizes)
 {
+	printk("hxy drm_fbdev_cma_create!!! FBDEV-CMA GOOD");
 	return drm_fbdev_cma_create_with_funcs(helper, sizes, &drm_fb_cma_funcs);
 }
 
@@ -554,7 +714,8 @@ struct drm_fbdev_cma *drm_fbdev_cma_init_with_funcs(struct drm_device *dev,
 		goto err_drm_fb_helper_fini;
 
 	}
-
+	/* disable all the possible outputs/crtcs before entering KMS mode */
+	drm_helper_disable_unused_functions(dev);
 	ret = drm_fb_helper_initial_config(helper, preferred_bpp);
 	if (ret < 0) {
 		dev_err(dev->dev, "Failed to set initial hw configuration.\n");

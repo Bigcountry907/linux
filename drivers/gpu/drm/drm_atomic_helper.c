@@ -656,12 +656,14 @@ int drm_atomic_helper_check(struct drm_device *dev,
 			    struct drm_atomic_state *state)
 {
 	int ret;
-
+	dump_stack();
 	ret = drm_atomic_helper_check_modeset(dev, state);
+	printk("hxy drm_atomic_helper_check1 %d \n",ret);
 	if (ret)
 		return ret;
 
 	ret = drm_atomic_helper_check_planes(dev, state);
+	printk("hxy drm_atomic_helper_check2 %d \n",ret);
 	if (ret)
 		return ret;
 
@@ -677,7 +679,7 @@ disable_outputs(struct drm_device *dev, struct drm_atomic_state *old_state)
 	struct drm_crtc *crtc;
 	struct drm_crtc_state *old_crtc_state;
 	int i;
-
+	printk("hxy disable_outputs \n");
 	for_each_connector_in_state(old_state, connector, old_conn_state, i) {
 		const struct drm_encoder_helper_funcs *funcs;
 		struct drm_encoder *encoder;
@@ -934,6 +936,7 @@ EXPORT_SYMBOL(drm_atomic_helper_commit_modeset_disables);
  * and do the plane commits at the end. This is useful for drivers doing runtime
  * PM since planes updates then only happen when the CRTC is actually enabled.
  */
+extern int waiting_for_hdmi_connect;
 void drm_atomic_helper_commit_modeset_enables(struct drm_device *dev,
 					      struct drm_atomic_state *old_state)
 {
@@ -942,7 +945,15 @@ void drm_atomic_helper_commit_modeset_enables(struct drm_device *dev,
 	struct drm_connector *connector;
 	struct drm_connector_state *old_conn_state;
 	int i;
-
+	
+	printk("hxy drm_atomic_helper_commit_modeset_enables \n");
+	
+//	if(waiting_for_hdmi_connect)
+//		{
+//			printk("hxy waiting_for_hdmi_connect,return!");
+//			return;
+//	}
+	
 	for_each_crtc_in_state(old_state, crtc, old_crtc_state, i) {
 		const struct drm_crtc_helper_funcs *funcs;
 
@@ -1171,6 +1182,8 @@ void drm_atomic_helper_commit_tail(struct drm_atomic_state *state)
 {
 	struct drm_device *dev = state->dev;
 
+	printk("drm_atomic_helper_commit_tail \n");
+	
 	drm_atomic_helper_commit_modeset_disables(dev, state);
 
 	drm_atomic_helper_commit_planes(dev, state, 0);
@@ -1773,8 +1786,9 @@ void drm_atomic_helper_commit_planes(struct drm_device *dev,
 
 		funcs->atomic_begin(crtc, old_crtc_state);
 	}
-
+	printk("hxy drm_atomic_helper_commit_planes!1 \n");
 	for_each_plane_in_state(old_state, plane, old_plane_state, i) {
+		printk("hxy drm_atomic_helper_commit_planes!2\n");
 		const struct drm_plane_helper_funcs *funcs;
 		bool disabling;
 
@@ -1884,6 +1898,11 @@ drm_atomic_helper_commit_planes_on_crtc(struct drm_crtc_state *old_crtc_state)
 		else if (plane->state->crtc ||
 			 drm_atomic_plane_disabling(plane, old_plane_state))
 			plane_funcs->atomic_update(plane, old_plane_state);
+		else {
+			printk("hxy here waiting_for_hdmi_connect %d \n",waiting_for_hdmi_connect);
+		if(!waiting_for_hdmi_connect)
+			plane_funcs->atomic_update(plane, old_plane_state);		
+			}			
 	}
 
 	if (crtc_funcs && crtc_funcs->atomic_flush)
@@ -2887,7 +2906,7 @@ int drm_atomic_helper_connector_dpms(struct drm_connector *connector,
 	int ret;
 	bool active = false;
 	int old_mode = connector->dpms;
-
+	printk("hxy drm_atomic_helper_connector_dpms!\n");
 	if (mode != DRM_MODE_DPMS_ON)
 		mode = DRM_MODE_DPMS_OFF;
 

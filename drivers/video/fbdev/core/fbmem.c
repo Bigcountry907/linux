@@ -817,7 +817,7 @@ fb_write(struct file *file, const char __user *buf, size_t count, loff_t *ppos)
 	u8 __iomem *dst;
 	int c, cnt = 0, err = 0;
 	unsigned long total_size;
-
+	printk("BC-907 FBMEM.c fb_write in !!!\n");
 	if (!info || !info->screen_base)
 		return -ENODEV;
 
@@ -853,7 +853,7 @@ fb_write(struct file *file, const char __user *buf, size_t count, loff_t *ppos)
 		return -ENOMEM;
 
 	dst = (u8 __iomem *) (info->screen_base + p);
-
+	printk("BC-907 FBMEM.c fb_write screen_base =0x%x \n",info->screen_base);
 	if (info->fbops->fb_sync)
 		info->fbops->fb_sync(info);
 
@@ -876,7 +876,7 @@ fb_write(struct file *file, const char __user *buf, size_t count, loff_t *ppos)
 	}
 
 	kfree(buffer);
-
+	printk("BC-907 FBMEM.c fb_write out !!!ret %d \n",(cnt) ? cnt : err);
 	return (cnt) ? cnt : err;
 }
 
@@ -1227,7 +1227,7 @@ static long do_fb_ioctl(struct fb_info *info, unsigned int cmd,
 static long fb_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 {
 	struct fb_info *info = file_fb_info(file);
-
+	printk("BC-907 FBMEM.c fb_ioctl in !!!\n");
 	if (!info)
 		return -ENODEV;
 	return do_fb_ioctl(info, cmd, arg);
@@ -1355,7 +1355,7 @@ static long fb_compat_ioctl(struct file *file, unsigned int cmd,
 	struct fb_info *info = file_fb_info(file);
 	struct fb_ops *fb;
 	long ret = -ENOIOCTLCMD;
-
+	printk("BC-907 FBMEM.c fb_compat_ioctl in !!!");
 	if (!info)
 		return -ENODEV;
 	fb = info->fbops;
@@ -1384,6 +1384,7 @@ static long fb_compat_ioctl(struct file *file, unsigned int cmd,
 			ret = fb->fb_compat_ioctl(info, cmd, arg);
 		break;
 	}
+	printk("BC-907 FBMEM.c fb_compat_ioctl out !!!%ld \n",ret);
 	return ret;
 }
 #endif
@@ -1396,17 +1397,22 @@ fb_mmap(struct file *file, struct vm_area_struct * vma)
 	unsigned long mmio_pgoff;
 	unsigned long start;
 	u32 len;
-
-	if (!info)
+	printk("BC-907 FBMEM.c fb_mmap in !!!\n");
+	if (!info) {
+		printk("BC-907 FBMEM.c fb_mmap err1 !!!\n");
 		return -ENODEV;
+	}
 	fb = info->fbops;
-	if (!fb)
+	if (!fb){
+		printk("BC-907 FBMEM.c fb_mmap err2 !!!\n");
 		return -ENODEV;
+	}
 	mutex_lock(&info->mm_lock);
 	if (fb->fb_mmap) {
 		int res;
 		res = fb->fb_mmap(info, vma);
 		mutex_unlock(&info->mm_lock);
+		printk("BC-907 FBMEM.c fb_mmap out1 %d !!!\n",res);
 		return res;
 	}
 
@@ -1420,6 +1426,7 @@ fb_mmap(struct file *file, struct vm_area_struct * vma)
 	if (vma->vm_pgoff >= mmio_pgoff) {
 		if (info->var.accel_flags) {
 			mutex_unlock(&info->mm_lock);
+			printk("BC-907 FBMEM.c fb_mmap out2 -%d !!!\n",EINVAL);
 			return -EINVAL;
 		}
 
@@ -1432,7 +1439,7 @@ fb_mmap(struct file *file, struct vm_area_struct * vma)
 	vma->vm_page_prot = vm_get_page_prot(vma->vm_flags);
 	fb_pgprotect(file, vma, start);
 
-	return vm_iomap_memory(vma, start, len);
+		return vm_iomap_memory(vma, start, len);
 }
 
 static int
@@ -1443,7 +1450,7 @@ __releases(&info->lock)
 	int fbidx = iminor(inode);
 	struct fb_info *info;
 	int res = 0;
-
+	printk("BC-907 FBMEM.c fb_open in %d !!!",fbidx);
 	info = get_fb_info(fbidx);
 	if (!info) {
 		request_module("fb%d", fbidx);
@@ -1473,6 +1480,7 @@ out:
 	mutex_unlock(&info->lock);
 	if (res)
 		put_fb_info(info);
+		printk("BC-907 FBMEM.c fb_open out %d %d!!!",res,fbidx);
 	return res;
 }
 
@@ -1482,13 +1490,14 @@ __acquires(&info->lock)
 __releases(&info->lock)
 {
 	struct fb_info * const info = file->private_data;
-
+	printk("BC-907 FBMEM.c fb_release in !!!\n");
 	mutex_lock(&info->lock);
 	if (info->fbops->fb_release)
 		info->fbops->fb_release(info,1);
 	module_put(info->fbops->owner);
 	mutex_unlock(&info->lock);
 	put_fb_info(info);
+	printk("BC-907 FBMEM.c fb_release out!!!\n");
 	return 0;
 }
 

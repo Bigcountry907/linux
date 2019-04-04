@@ -232,7 +232,7 @@ int drm_helper_probe_single_connector_modes(struct drm_connector *connector,
 
 	WARN_ON(!mutex_is_locked(&dev->mode_config.mutex));
 
-	DRM_DEBUG_KMS("[CONNECTOR:%d:%s]\n", connector->base.id,
+	DRM_DEBUG_KMS("hxy [CONNECTOR:%d:%s]\n", connector->base.id,
 			connector->name);
 	/* set all old modes to the stale state */
 	list_for_each_entry(mode, &connector->modes, head)
@@ -251,7 +251,8 @@ int drm_helper_probe_single_connector_modes(struct drm_connector *connector,
 	} else {
 		connector->status = connector->funcs->detect(connector, true);
 	}
-
+		printk("[CONNECTOR:%d:%s] status updated %s\n",connector->base.id,
+		connector->name,connector->status);
 	/*
 	 * Normally either the driver's hpd code or the poll loop should
 	 * pick up any changes and fire the hotplug event. But if

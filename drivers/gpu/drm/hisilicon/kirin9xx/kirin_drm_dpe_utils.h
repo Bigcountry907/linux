@@ -21,7 +21,7 @@
 #endif
 #include "kirin_drm_drv.h"
 
-/*#define CONFIG_HISI_FB_OV_BASE_USED*/
+//#define CONFIG_HISI_FB_OV_BASE_USED*/
 /*#define CONFIG_HISI_FB_DPP_COLORBAR_USED*/
 /*#define CONFIG_HISI_FB_LDI_COLORBAR_USED*/
 

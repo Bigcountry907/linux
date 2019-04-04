@@ -3258,7 +3258,7 @@ static void fbcon_get_requirement(struct fb_info *info,
 		}
 	}
 }
-
+extern int waiting_for_hdmi_connect;
 static int fbcon_event_notify(struct notifier_block *self,
 			      unsigned long action, void *data)
 {
@@ -3268,7 +3268,16 @@ static int fbcon_event_notify(struct notifier_block *self,
 	struct fb_con2fbmap *con2fb;
 	struct fb_blit_caps *caps;
 	int idx, ret = 0;
-
+		if(waiting_for_hdmi_connect)
+	{
+			//msleep(1000);
+			printk("BC-907 DRM_ATOMIC_HELPER.c fbcon_event_notify waiting_for_hdmi_connect,return!cation 0x%x \n",action);
+			//	return 0;
+		} else {
+			printk("BC-907 DRM_ATOMIC_HELPER.c fbcon_event_notify ,!cation 0x%x \n",action);
+		}			
+	
+	
 	/*
 	 * ignore all events except driver registration and deregistration
 	 * if fbcon is not active

@@ -991,7 +991,6 @@ static int hisi_dss_mctl_sys_config(struct dss_hw_ctx *ctx, int chn_idx)
 	mctl_sys_base = ctx->base + DSS_MCTRL_SYS_OFFSET;
 	mctl_rch_ov_oen_offset = MCTL_RCH0_OV_OEN + chn_idx * 0x4;
 	mctl_rch_flush_en_offset = MCTL_RCH0_FLUSH_EN + chn_idx * 0x4;
-
 	set_reg(mctl_sys_base + mctl_rch_ov_oen_offset,
 		((1 << (layer_idx + 1)) | (0x100 << DSS_OVL0)), 32, 0);
 
@@ -1002,10 +1001,10 @@ static int hisi_dss_mctl_sys_config(struct dss_hw_ctx *ctx, int chn_idx)
 	}
 
 	set_reg(mctl_sys_base + MCTL_RCH_OV0_SEL, chn_idx, 4, (layer_idx + 1) * 4);
-
 	set_reg(mctl_sys_base + MCTL_OV0_FLUSH_EN, 0xd, 4, 0);
+#if 1	
 	set_reg(mctl_sys_base + mctl_rch_flush_en_offset, 0x1, 32, 0);
-
+#endif
 	return 0;
 }
 
@@ -1392,6 +1391,7 @@ void hisi_dss_smmu_on(struct dss_hw_ctx *ctx)
 
 void hisifb_dss_on(struct dss_hw_ctx *ctx)
 {
+	printk("hisifb_dss_on!!");
 	/* dss qos on*/
 	hisi_dss_qos_on(ctx);
 	/* mif on*/
@@ -1514,7 +1514,7 @@ REDO:
 
 	return ret;
 }
-
+extern unsigned long smem_start_G;
 void hisi_fb_pan_display(struct drm_plane *plane)
 {
 	struct drm_plane_state *state = plane->state;
@@ -1559,9 +1559,9 @@ void hisi_fb_pan_display(struct drm_plane *plane)
 	bpp = fb->bits_per_pixel / 8;
 	stride = fb->pitches[0];
 
-#if defined(CONFIG_HISI_FB_LDI_COLORBAR_USED) || defined(CONFIG_HISI_FB_DPP_COLORBAR_USED) || defined(CONFIG_HISI_FB_OV_BASE_USED)
-	return;
-#endif
+//#if defined(CONFIG_HISI_FB_LDI_COLORBAR_USED) || defined(CONFIG_HISI_FB_DPP_COLORBAR_USED) || defined(CONFIG_HISI_FB_OV_BASE_USED)
+//	return;
+//#endif
 
 #ifndef CMA_BUFFER_USED
 	if (fbdev)
@@ -1569,7 +1569,14 @@ void hisi_fb_pan_display(struct drm_plane *plane)
 	else
 		DRM_ERROR("fbdev is null? \n");
 #else
-	display_addr = (u32)obj->paddr + src_y * stride;
+	if(obj) {
+		display_addr = (u32)obj->paddr + src_y * stride;
+		printk("hxy display_addr is 0x%x \n",display_addr);
+	}
+	else {
+			DRM_ERROR("hxy obj is null? \n");
+			return;
+		}
 #endif
 
 	rect.left = 0;
@@ -1578,7 +1585,7 @@ void hisi_fb_pan_display(struct drm_plane *plane)
 	rect.bottom = src_h - 1;
 	hal_fmt = HISI_FB_PIXEL_FORMAT_BGRA_8888;//dss_get_format(fb->pixel_format);
 
-	DRM_DEBUG_DRIVER("channel%d: src:(%d,%d, %dx%d) crtc:(%d,%d, %dx%d), rect(%d,%d,%d,%d),"
+		DRM_DEBUG("hxy channel%d: src:(%d,%d, %dx%d) crtc:(%d,%d, %dx%d), rect(%d,%d,%d,%d),"
 		"fb:%dx%d, pixel_format=%d, stride=%d, paddr=0x%x, bpp=%d, bits_per_pixel=%d.\n",
 		chn_idx, src_x, src_y, src_w, src_h,
 		crtc_x, crtc_y, crtc_w, crtc_h,
@@ -1603,7 +1610,7 @@ void hisi_fb_pan_display(struct drm_plane *plane)
 	hisi_dss_ovl_config(ctx, &rect, mode->hdisplay, mode->vdisplay);
 
 	hisi_dss_mctl_ov_config(ctx, chn_idx);
-	hisi_dss_mctl_sys_config(ctx, chn_idx);
+	hisi_dss_mctl_sys_config(ctx, chn_idx);/* */
 	hisi_dss_mctl_mutex_unlock(ctx);
 	hisi_dss_unflow_handler(ctx, true);
 

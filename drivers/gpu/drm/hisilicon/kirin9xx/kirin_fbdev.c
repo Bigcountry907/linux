@@ -58,7 +58,7 @@ unsigned long kirin_alloc_fb_buffer(struct kirin_fbdev *fbdev, int size)
 	size_t buf_len = 0;
 	unsigned long buf_addr = 0;
 	int shared_fd = -1;
-
+	printk("hxy kirin_alloc_fb_buffer!");
 	if (NULL == fbdev) {
 		DRM_ERROR("fbdev is NULL!\n");
 		return -EINVAL;
@@ -326,7 +326,7 @@ static int kirin_fbdev_create(struct drm_fb_helper *helper,
 	struct drm_mode_fb_cmd2 mode_cmd = {0};
 	int ret, size;
 	unsigned int bytes_per_pixel;
-
+	printk("kirin_fbdev_create");
 	DRM_DEBUG("create fbdev: %dx%d@%d (%dx%d)\n", sizes->surface_width,
 			sizes->surface_height, sizes->surface_bpp,
 			sizes->fb_width, sizes->fb_height);
