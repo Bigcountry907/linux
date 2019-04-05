@@ -176,7 +176,7 @@ source "drivers/ipack/Kconfig"
 
 source "drivers/reset/Kconfig"
 
-source "drivers/gpu/arm/Kconfig"
+#source "drivers/gpu/arm/Kconfig"
 
 source "drivers/fmc/Kconfig"
 
@@ -210,7 +210,7 @@ source "drivers/fpga/Kconfig"
 
 source "drivers/tee/Kconfig"
 
-source "drivers/vcodec/venc_hivna/Kconfig"
+#source "drivers/vcodec/venc_hivna/Kconfig"
 
-source "drivers/vcodec/vdec_hivna/Kconfig"
+#source "drivers/vcodec/vdec_hivna/Kconfig"
 endmenu
