@@ -883,8 +883,8 @@ static enum blk_eh_timer_return nvme_timeout(struct request *req, bool reserved)
 			 req->tag, nvmeq->qid);
 		return BLK_EH_HANDLED;
 	}
+
 	/*
-	
 	 * Shutdown immediately if controller times out while starting. The
 	 * reset work will see the pci device disabled when it gets the forced
 	 * cancellation error. All outstanding requests are completed on
